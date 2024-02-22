@@ -143,7 +143,6 @@ token token_stream::get()    // read a token from the token_stream
                 s += ch;
             }
             std::cin.putback(ch);
-            //if (s == "let") return token(let); // declaration keyword
             return token(name, s);
         }
         throw std::runtime_error("Bad token");

@@ -1,0 +1,10 @@
+^C:\USERS\CATHE\ONEDRIVE\DESKTOP\LSU UNDERGRAD\SEMESTER 4\CSC 3380\CALCULATOR\BUILD\CMAKEFILES\8200B132AA5BC620A4497DF2C55FB804\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/cathe/OneDrive/Desktop/LSU Undergrad/Semester 4/CSC 3380/Calculator" "-BC:/Users/cathe/OneDrive/Desktop/LSU Undergrad/Semester 4/CSC 3380/Calculator/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/cathe/OneDrive/Desktop/LSU Undergrad/Semester 4/CSC 3380/Calculator/build/spring2024-csc3380-lecture7.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

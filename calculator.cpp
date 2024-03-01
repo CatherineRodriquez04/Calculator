@@ -70,16 +70,19 @@ std::string const result = "= "; // indicate that a result follows
 class token_stream
 {
     std::istream& is;
+    token buffer;
+    bool full;
 
 public:
     token_stream(std::istream& is)
-      : is(is)
+      : is(is), buffer('\0'), full(false)
     {
     }
 
     token get();
     void putback(token);
     void ignore(char c);
+    std::string skip_to(char c);
 };
 
 template<typename T, typename U>
@@ -87,15 +90,23 @@ T narrow_cast(U&& u) {
     return static_cast<T>(std::forward<U>(u));
 }
 
-token_stream ts(std::cin);
-
 void token_stream::putback(token t)
 {
-    is.putback(t.kind());
+    if (full)
+        throw std::runtime_error("putback() into a full buffer");
+    buffer = t;
+    full = true;
 }
 
 token token_stream::get()
 {
+    // check if we already have a Token ready
+    if (full)
+    {
+        full = false;
+        return buffer;
+    }
+
     char ch;
     is >> ch;
 
@@ -153,16 +164,29 @@ void token_stream::ignore(char c)
     }
 }
 
-double expression();
+std::string token_stream::skip_to(char c)
+{
+    std::string result;
+    char ch = 0;
+    while (is >> ch)
+    {
+        result += ch;
+        if (ch == c)
+            break;
+    }
+    return result;
+}
 
-double primary()        // Number or ‘(‘ Expression ‘)’
+double expression(token_stream& ts);
+
+double primary(token_stream& ts)    // Number or ‘(‘ Expression ‘)’
 {
     token t = ts.get();
     switch (t.kind())
     {
     case '(':           // handle ‘(‘ Expression ‘)’
     {
-        double d = expression();
+        double d = expression(ts);
         t = ts.get();
         if (t.kind() != ')')
             throw std::runtime_error("')' expected");
@@ -172,50 +196,49 @@ double primary()        // Number or ‘(‘ Expression ‘)’
         return t.value();   // return the number’s value
     case name:
     {
+        std::string expr;
         token next_token = ts.get();
         if (next_token.kind() == '=')
         {
-            double value = expression();
-            expressions[t.name()] = std::to_string(value);
-            return value;
+            expr = ts.skip_to(print);
+            expressions[t.name()] = expr;
         }
         else
         {
             ts.putback(next_token);
-            if (expressions.find(t.name()) != expressions.end())
-            {
-                std::istringstream iss(expressions[t.name()]);
-                double result;
-                iss >> result;
-                return result;
-            }
-            else
+            auto it = expressions.find(t.name());
+            if (it == expressions.end())
             {
                 throw std::runtime_error("Undefined variable");
             }
+            expr = it->second;
         }
+
+        std::istringstream iss(expr);
+        token_stream sts(iss);
+        return expression(sts);
     }
     case '-':
-        return -primary();      // handles negative number
+        return -primary(ts);    // handles negative number
     default:
         throw std::runtime_error("primary expected");
     }
 }
 
-double term()
+double term(token_stream& ts)
 {
-    double left = primary();        // get the Primary
+    double left = primary(ts);    // get the Primary
     while (true)
     {
         token t = ts.get();         // get the next Token ...
         switch (t.kind())
         {
         case '*':
-            left *= primary();
+            left *= primary(ts);
             break;
         case '/':
         {
-            double d = primary();
+            double d = primary(ts);
             if (d == 0)
                 throw std::runtime_error("divide by zero");
             left /= d;
@@ -236,19 +259,19 @@ double term()
     }
 }
 
-double expression()
+double expression(token_stream& ts)
 {
-    double left = term();           // get the term
+    double left = term(ts);    // get the term
     while (true)
     {
         token t = ts.get();         // get the next Token ...
         switch (t.kind())           // ... and do the right thing with it
         {
         case '+':
-            left += term();
+            left += term(ts);
             break;
         case '-':
-            left -= term();
+            left -= term(ts);
             break;
         default:
             ts.putback(t);       // <<< put the unused token back
@@ -257,12 +280,12 @@ double expression()
     }
 }
 
-void clean_up_mess()
+void clean_up_mess(token_stream& ts)
 {
     ts.ignore(print);
 }
 
-void calculate()
+void calculate(token_stream& ts)
 {
     while (true)
     {
@@ -279,7 +302,7 @@ void calculate()
 
             ts.putback(t);
 
-            std::cout << result << expression() << std::endl;
+            std::cout << result << expression(ts) << std::endl;
         }
         catch (std::runtime_error const& e)
         {
@@ -293,7 +316,8 @@ int main()
 {
     try
     {
-        calculate();
+        token_stream sts(std::cin);
+        calculate(sts);
         return 0;
     }
     catch (...)

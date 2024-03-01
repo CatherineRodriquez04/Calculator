@@ -1,3 +1,15 @@
+/*
+Catherine Rodriquez
+CSC 3380
+Calculator Project:
+    - +, -, *. /, (, ), =
+    - stores variables
+        - updates variable when reference is changed
+    - negative numbers
+    - % (modulus/remainder)
+    - pre-defined symbolic values 
+*/
+
 
 #include <iostream>
 #include <stdexcept>

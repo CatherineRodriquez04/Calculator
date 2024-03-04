@@ -10,7 +10,6 @@ Calculator Project:
     - pre-defined symbolic values 
 */
 
-
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -247,7 +246,7 @@ double term(token_stream& ts)
         case '%':
         {
             int i1 = narrow_cast<int>(left);
-            int i2 = narrow_cast<int>(term());
+            int i2 = narrow_cast<int>(term(ts));
             if (i2 == 0) throw std::runtime_error("divide by zero");
             left = i1 % i2;
             break;
@@ -302,12 +301,25 @@ void calculate(token_stream& ts)
 
             ts.putback(t);
 
-            std::cout << result << expression(ts) << std::endl;
+            // Evaluate expression
+            double result = expression(ts);
+
+            // Check if the result is for a variable assignment
+            if (t.kind() == let)
+            {
+                std::string var_name = ts.get().name(); // Get the variable name
+                expressions[var_name] = std::to_string(result); // Store the result
+            }
+            else
+            {
+                // If not a variable assignment, just print the result
+                std::cout << result << std::endl;
+            }
         }
         catch (std::runtime_error const& e)
         {
             std::cerr << e.what() << std::endl; // write error message
-            clean_up_mess();                    // <<< The tricky part!
+            clean_up_mess(ts);                    // <<< The tricky part!
         }
     }
 }

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\cathe\OneDrive\Desktop\LSU Undergrad\Semester 4\CSC 3380\Calculator\calculator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\cathe\OneDrive\Desktop\LSU Undergrad\Semester 4\CSC 3380\Calculator\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{94ED4AF5-BAF8-3DAF-8D23-9AE200715911}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
